@@ -1,0 +1,32 @@
+1.
+    A B C Y
+    0 0 0 1
+    0 0 1 1
+    0 1 0 1
+    0 1 1 1
+    1 0 0 1
+    1 0 1 1
+    1 1 0 1
+    1 1 1 0
+
+3a. 0b100011
+4a. 9
+
+5a. 0x23
+5b. 0x40
+
+6a. 0b1111000000001111
+6b. 0b1010101111001101
+
+7a. 0b00100010
+7b. 0b11011110
+
+8a. 211
+8b. 8
+8c. 255
+
+9a. -45
+9b. 8
+9c. -1
+
+10. Rufus is actually incorrect. Assuming a signed 16-bit integer system, the value of i will actually overflow and reset to 0. Since we are doubling the value of i every time, and there are 16 bits available, the loop will iterate 16 times, so the final value of count will be 16, and i will end at 0. 
