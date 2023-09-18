@@ -1,0 +1,74 @@
+#! /usr/local/Cellar/icarus-verilog/12.0/bin/vvp
+:ivl_version "12.0 (stable)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision - 10;
+:vpi_module "/usr/local/Cellar/icarus-verilog/12.0/lib/ivl/system.vpi";
+:vpi_module "/usr/local/Cellar/icarus-verilog/12.0/lib/ivl/vhdl_sys.vpi";
+:vpi_module "/usr/local/Cellar/icarus-verilog/12.0/lib/ivl/vhdl_textio.vpi";
+:vpi_module "/usr/local/Cellar/icarus-verilog/12.0/lib/ivl/v2005_math.vpi";
+:vpi_module "/usr/local/Cellar/icarus-verilog/12.0/lib/ivl/va_math.vpi";
+S_0x7fbce5704470 .scope module, "majority_tb" "majority_tb" 2 6;
+ .timescale -9 -10;
+v0x600000dac6c0_0 .net "A", 2 0, L_0x600000ea8000;  1 drivers
+v0x600000dac750_0 .net "Y", 0 0, L_0x6000014ac310;  1 drivers
+v0x600000dac7e0_0 .var/i "k", 31 0;
+L_0x600000ea8000 .part v0x600000dac7e0_0, 0, 3;
+S_0x7fbce57045e0 .scope module, "the_circuit" "majority" 2 13, 3 1 0, S_0x7fbce5704470;
+ .timescale -9 -10;
+    .port_info 0 /INPUT 3 "A";
+    .port_info 1 /OUTPUT 1 "Y";
+L_0x6000014ac150 .functor AND 1, L_0x600000ea80a0, L_0x600000ea8140, C4<1>, C4<1>;
+L_0x6000014ac1c0 .functor AND 1, L_0x600000ea81e0, L_0x600000ea8280, C4<1>, C4<1>;
+L_0x6000014ac230 .functor AND 1, L_0x600000ea8320, L_0x600000ea83c0, C4<1>, C4<1>;
+L_0x6000014ac2a0 .functor OR 1, L_0x6000014ac150, L_0x6000014ac1c0, C4<0>, C4<0>;
+L_0x6000014ac310 .functor OR 1, L_0x6000014ac2a0, L_0x6000014ac230, C4<0>, C4<0>;
+v0x600000dac000_0 .net "A", 2 0, L_0x600000ea8000;  alias, 1 drivers
+v0x600000dac090_0 .net "Y", 0 0, L_0x6000014ac310;  alias, 1 drivers
+v0x600000dac120_0 .net *"_ivl_1", 0 0, L_0x600000ea80a0;  1 drivers
+v0x600000dac1b0_0 .net *"_ivl_13", 0 0, L_0x600000ea8320;  1 drivers
+v0x600000dac240_0 .net *"_ivl_15", 0 0, L_0x600000ea83c0;  1 drivers
+v0x600000dac2d0_0 .net *"_ivl_18", 0 0, L_0x6000014ac2a0;  1 drivers
+v0x600000dac360_0 .net *"_ivl_3", 0 0, L_0x600000ea8140;  1 drivers
+v0x600000dac3f0_0 .net *"_ivl_7", 0 0, L_0x600000ea81e0;  1 drivers
+v0x600000dac480_0 .net *"_ivl_9", 0 0, L_0x600000ea8280;  1 drivers
+v0x600000dac510_0 .net "w1", 0 0, L_0x6000014ac150;  1 drivers
+v0x600000dac5a0_0 .net "w2", 0 0, L_0x6000014ac1c0;  1 drivers
+v0x600000dac630_0 .net "w3", 0 0, L_0x6000014ac230;  1 drivers
+L_0x600000ea80a0 .part L_0x600000ea8000, 0, 1;
+L_0x600000ea8140 .part L_0x600000ea8000, 1, 1;
+L_0x600000ea81e0 .part L_0x600000ea8000, 1, 1;
+L_0x600000ea8280 .part L_0x600000ea8000, 2, 1;
+L_0x600000ea8320 .part L_0x600000ea8000, 0, 1;
+L_0x600000ea83c0 .part L_0x600000ea8000, 2, 1;
+    .scope S_0x7fbce5704470;
+T_0 ;
+    %pushi/vec4 0, 0, 32;
+    %store/vec4 v0x600000dac7e0_0, 0, 32;
+    %end;
+    .thread T_0;
+    .scope S_0x7fbce5704470;
+T_1 ;
+    %vpi_call 2 17 "$dumpfile", "majority.vcd" {0 0 0};
+    %vpi_call 2 18 "$dumpvars", 32'sb00000000000000000000000000000000, S_0x7fbce5704470 {0 0 0};
+    %pushi/vec4 0, 0, 32;
+    %store/vec4 v0x600000dac7e0_0, 0, 32;
+T_1.0 ;
+    %load/vec4 v0x600000dac7e0_0;
+    %cmpi/s 8, 0, 32;
+    %jmp/0xz T_1.1, 5;
+    %delay 100, 0;
+    %vpi_call 2 21 "$display", "done testing case %d", v0x600000dac7e0_0 {0 0 0};
+    %load/vec4 v0x600000dac7e0_0;
+    %addi 1, 0, 32;
+    %store/vec4 v0x600000dac7e0_0, 0, 32;
+    %jmp T_1.0;
+T_1.1 ;
+    %vpi_call 2 23 "$finish" {0 0 0};
+    %end;
+    .thread T_1;
+# The file index is used to find the file name in the following table.
+:file_names 4;
+    "N/A";
+    "<interactive>";
+    "majority_tb.v";
+    "./majority.v";
