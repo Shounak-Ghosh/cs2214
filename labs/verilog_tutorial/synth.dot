@@ -1,0 +1,22 @@
+digraph "test" {
+label="test";
+rankdir="LR";
+remincross=true;
+n1 [ shape=octagon, label="A", color="black", fontcolor="black" ];
+n2 [ shape=octagon, label="B", color="black", fontcolor="black" ];
+n3 [ shape=octagon, label="C", color="black", fontcolor="black" ];
+n4 [ shape=octagon, label="D", color="black", fontcolor="black" ];
+n5 [ shape=octagon, label="E", color="black", fontcolor="black" ];
+n6 [ shape=diamond, label="w1", color="black", fontcolor="black" ];
+c8 [ shape=record, label="{{<p1> A}|$83\n$_NOT_|{<p7> Y}}",  ];
+c9 [ shape=record, label="{{<p1> A|<p2> B}|$81\n$_AND_|{<p7> Y}}",  ];
+c10 [ shape=record, label="{{<p1> A|<p2> B}|$82\n$_OR_|{<p7> Y}}",  ];
+n1:e -> c9:p1:w [color="black", fontcolor="black", label=""];
+n2:e -> c9:p2:w [color="black", fontcolor="black", label=""];
+n3:e -> c8:p1:w [color="black", fontcolor="black", label=""];
+c10:p7:e -> n4:w [color="black", fontcolor="black", label=""];
+c8:p7:e -> n5:w [color="black", fontcolor="black", label=""];
+n5:e -> c10:p2:w [color="black", fontcolor="black", label=""];
+c9:p7:e -> n6:w [color="black", fontcolor="black", label=""];
+n6:e -> c10:p1:w [color="black", fontcolor="black", label=""];
+}
