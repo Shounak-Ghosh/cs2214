@@ -53,8 +53,8 @@ int main() {
     cout << detectBitPattern(943) << " " << detectBitPattern(47) << endl;
 
     //9
-    bool a = 2 && 5;
-    int b = 2 & 5;
+    bool a = 2 && 4;
+    int b = 2 & 4;
 
     cout << "a = " << a << endl;
     cout << "b = " << b << endl;

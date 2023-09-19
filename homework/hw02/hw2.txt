@@ -2,4 +2,6 @@
 6. return x & ~16;
 7. return (x&7) << 6 | (x&7) << 3 | (x&7);
 8. return (x & 15 << 5) >> 5 == 9 | (x & 15 << 5) >> 5 == 13;
-9. Rufus is incorrect. 
+9.Suppose we want to compare the values 2 and 4. We know that 0 and False are logically equivalent and any other number and True are logically equivalent. Via binary arithmetic, we have 2 & 4 = 0, or False. However, 2 && 4 is equivalent to True && True, which is True, so we have a contradiction. Thus, Rufus is incorrect in his belief that binary operators can be substituted for logical operators, because they do not always return the same value.
+
+

@@ -1,0 +1,74 @@
+#! /usr/local/Cellar/icarus-verilog/12.0/bin/vvp
+:ivl_version "12.0 (stable)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision - 10;
+:vpi_module "/usr/local/Cellar/icarus-verilog/12.0/lib/ivl/system.vpi";
+:vpi_module "/usr/local/Cellar/icarus-verilog/12.0/lib/ivl/vhdl_sys.vpi";
+:vpi_module "/usr/local/Cellar/icarus-verilog/12.0/lib/ivl/vhdl_textio.vpi";
+:vpi_module "/usr/local/Cellar/icarus-verilog/12.0/lib/ivl/v2005_math.vpi";
+:vpi_module "/usr/local/Cellar/icarus-verilog/12.0/lib/ivl/va_math.vpi";
+S_0x7fed4ef05580 .scope module, "binary_to_gray_tb" "binary_to_gray_tb" 2 7;
+ .timescale -9 -10;
+v0x600001c41050_0 .net "B", 3 0, L_0x600001f40000;  1 drivers
+v0x600001c410e0_0 .net "G", 3 0, L_0x600001f403c0;  1 drivers
+v0x600001c41170_0 .var/i "k", 31 0;
+L_0x600001f40000 .part v0x600001c41170_0, 0, 4;
+S_0x7fed4ef06240 .scope module, "the_circuit" "binary_to_gray" 2 14, 3 1 0, S_0x7fed4ef05580;
+ .timescale -9 -10;
+    .port_info 0 /INPUT 4 "B";
+    .port_info 1 /OUTPUT 4 "G";
+L_0x600000540460 .functor XOR 1, L_0x600001f40140, L_0x600001f401e0, C4<0>, C4<0>;
+L_0x6000005404d0 .functor XOR 1, L_0x600001f40280, L_0x600001f40320, C4<0>, C4<0>;
+L_0x600000540540 .functor XOR 1, L_0x600001f40460, L_0x600001f40500, C4<0>, C4<0>;
+v0x600001c40900_0 .net "B", 3 0, L_0x600001f40000;  alias, 1 drivers
+v0x600001c40a20_0 .net "G", 3 0, L_0x600001f403c0;  alias, 1 drivers
+v0x600001c40ab0_0 .net *"_ivl_10", 0 0, L_0x600000540460;  1 drivers
+v0x600001c40b40_0 .net *"_ivl_15", 0 0, L_0x600001f40280;  1 drivers
+v0x600001c40bd0_0 .net *"_ivl_17", 0 0, L_0x600001f40320;  1 drivers
+v0x600001c40c60_0 .net *"_ivl_18", 0 0, L_0x6000005404d0;  1 drivers
+v0x600001c40cf0_0 .net *"_ivl_24", 0 0, L_0x600001f40460;  1 drivers
+v0x600001c40d80_0 .net *"_ivl_26", 0 0, L_0x600001f40500;  1 drivers
+v0x600001c40e10_0 .net *"_ivl_27", 0 0, L_0x600000540540;  1 drivers
+v0x600001c40ea0_0 .net *"_ivl_3", 0 0, L_0x600001f400a0;  1 drivers
+v0x600001c40f30_0 .net *"_ivl_7", 0 0, L_0x600001f40140;  1 drivers
+v0x600001c40fc0_0 .net *"_ivl_9", 0 0, L_0x600001f401e0;  1 drivers
+L_0x600001f400a0 .part L_0x600001f40000, 3, 1;
+L_0x600001f40140 .part L_0x600001f40000, 3, 1;
+L_0x600001f401e0 .part L_0x600001f40000, 2, 1;
+L_0x600001f40280 .part L_0x600001f40000, 2, 1;
+L_0x600001f40320 .part L_0x600001f40000, 1, 1;
+L_0x600001f403c0 .concat8 [ 1 1 1 1], L_0x600000540540, L_0x6000005404d0, L_0x600000540460, L_0x600001f400a0;
+L_0x600001f40460 .part L_0x600001f40000, 1, 1;
+L_0x600001f40500 .part L_0x600001f40000, 0, 1;
+    .scope S_0x7fed4ef05580;
+T_0 ;
+    %pushi/vec4 0, 0, 32;
+    %store/vec4 v0x600001c41170_0, 0, 32;
+    %end;
+    .thread T_0;
+    .scope S_0x7fed4ef05580;
+T_1 ;
+    %vpi_call 2 18 "$dumpfile", "binary_to_gray.vcd" {0 0 0};
+    %vpi_call 2 19 "$dumpvars", 32'sb00000000000000000000000000000000, S_0x7fed4ef05580 {0 0 0};
+    %pushi/vec4 0, 0, 32;
+    %store/vec4 v0x600001c41170_0, 0, 32;
+T_1.0 ;
+    %load/vec4 v0x600001c41170_0;
+    %cmpi/s 16, 0, 32;
+    %jmp/0xz T_1.1, 5;
+    %delay 100, 0;
+    %vpi_call 2 22 "$display", "done testing case %d", v0x600001c41170_0 {0 0 0};
+    %load/vec4 v0x600001c41170_0;
+    %addi 1, 0, 32;
+    %store/vec4 v0x600001c41170_0, 0, 32;
+    %jmp T_1.0;
+T_1.1 ;
+    %vpi_call 2 24 "$finish" {0 0 0};
+    %end;
+    .thread T_1;
+# The file index is used to find the file name in the following table.
+:file_names 4;
+    "N/A";
+    "<interactive>";
+    "binary_to_gray_tb.v";
+    "./binary_to_gray.v";
