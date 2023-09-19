@@ -22,3 +22,5 @@ This generates a `test.vcd` file which can be used for waveform analysis
 4. Select all components that appear (should match `test.v` file)
 5. Select recursive import --> Append
 6. Select Time --> Zoom --> Zoom Best Fit
+
+TODO create documentation for synthesis portion of the tutorial
