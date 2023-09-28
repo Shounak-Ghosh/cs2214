@@ -1,0 +1,60 @@
+1.
+
+A    state   | B
+0    0000    | 1010
+1    0001    | 1011
+0    0001    | 1011
+9    1001    | 0011
+8    1001    | 0011
+15   1111    | 0101
+0    1111    | 0101
+
+2a. Stores the value of Rg0 in Rg3.
+2b. Adds 5 to the value of Rg2.
+2c. Compares the values of Rg1 and Rg3, and updates the zero flag to 0 if equal, or 1 otherwise.
+2d. Jump to the instruction at program counter + 3 if the zero flag is .
+
+3.
+    1. Stores the value 2 into Rg0.
+    2. Store the value 4 in Rg1.
+    3. Add Rg0 to Rg1, storing 6 in Rg1.
+    4. Subtract 1 from Rg1, storing 5 in Rg1.
+    The final value of Rg0 is 2, and the final value of Rg1 is 5.
+
+4a. 101000101100
+4b. 110100010110
+4c. 111100111101
+4d. 001100000010
+
+5a. {add, Rg0, Rg1, 4'b0000}
+5b. {jmp, RXX, RXX, 4'b0110}
+5c. {sub, Rg2, Rg3, 4'b0000}
+5d. {movi, RXX, Rg2, 4'b1011}
+
+6a. The final value of Rg0 is 4 and Rg1 is 8
+6b. The final value of Rg0 is 5 and Rg1 is 0
+
+7. 
+myROM[0] = {movi, RXX, Rg3, 4b'1111}
+myRom[1] = {cmpi,RXX,Rg3,4b'0000} 
+myROM[2] = {jz, RXX, RXX, 4b'0011}
+myROM[3] = {subi, RXX, Rg3, 4b'0001} 
+myROM[4] = {jmp, RXX, RXX, 4'b1101};
+myROM[5] = {jmp, RXX, RXX, 4b'0000}
+myROM[6] = {jmp, RXX, RXX, 4b'0000}
+myROM[7] = {jmp, RXX, RXX, 4b'0000}
+myROM[8] = {jmp, RXX, RXX, 4b'0000}
+myROM[9] = {jmp, RXX, RXX, 4b'0000}
+myROM[10] = {jmp, RXX, RXX, 4b'0000}
+myROM[11] = {jmp, RXX, RXX, 4b'0000}
+myROM[12] = {jmp, RXX, RXX, 4b'0000}
+myROM[13] = {jmp, RXX, RXX, 4b'0000}
+myROM[14] = {jmp, RXX, RXX, 4b'0000}
+myROM[15] = {jmp, RXX, RXX, 4b'0000}
+
+
+
+
+
+    
+
