@@ -1,0 +1,29 @@
+1. 100,011,110,111,101,001
+
+
+2a. 1110 1011 0000 
+    Compares the value in Rg2 to the value in Rg3. Sets the zero flag to 1 if they are equal, to 0 otherwise. The program counter is incremented by 1.
+2b. 1010 0011 0000
+    Adds the value of Rg0 to the value of Rg3 and stores the result in Rg3. Sets the zero flag to 1 if the resulting sum is 0, to 0 otherwise.  The program counter is incremented by 1.
+2c. 0010 0000 0001
+    Increments the program counter by 1, regardless of the value of the zero flag. This is an unconditional jump because even if the zero flag is not set, the program counter will still be incremented by 1.
+
+3a. {addi, RXX, Rg1, 4b'0011}
+    Adds 3 to the value of Rg1 and stores the result in Rg1. Sets the zero flag to 1 if the resulting sum is 0, to 0 otherwise. The program counter is incremented by 1.
+3b. {add, Rg1, Rg1, 4b'0011}
+    Adds the value of Rg1 to the value of Rg1 and stores the result in Rg1. Sets the zero flag to 1 if the resulting sum is 0, to 0 otherwise. The program counter is incremented by 1.
+3c. {jmp, RXX, RXX, 4b'0000}
+    Increments the program counter by 0, essentially jumping to the current instruction infinitely. This serves to stop program execution.
+3d. {jmp, RXX, RXX, 4b'0001}
+    Increments the program counter by 1 
+
+4a. myROM[3] will be executed next.
+4b. myROM[5] will be executed next. 
+4c. myROM[6] will be executed next.
+
+
+5a. Initially, the program steps through a loop that decrements the value of Rg1 (intially 15) by 1 until it reaches 0. This process itself is repeated, since the value of Rg0 (initially 15) is also decremented by 1 until it reaches 0. Thus, the instruction is executed 15 * 15 = 225 times.
+5b. ROM[10] is executed 15 times. This instruction decrements Rg0 by 1 until it reaches 0. Once this occurs, the zero flag is set, and the program counter jumps to the final portion of the program.
+5c. ROM[12] is never executed. Upon reacting ROM[11], the program counter jumps unconditionally to (11 + 8) % 16 = 3, so the next instruction to be executed is ROM[3]. As discussed in the next part, the stop condition is reached at ROM[1], so instructions 12-15 are never reached.
+5d. ROM[1] is executed only once. During the final iteration, Rg0 is equal to 0, so the condition for ROM[4] is satisfied, so the program  counter will increment to (4 + 13) % 16 = 1, which is the address of ROM[1], whose function is to halt program execution.
+5e. This program can be viewed as a loop inside of a loop, with Rg1 as the outer loop variable and Rg0 as the inner loop variable. Since both registers are initialized to the maximum value of 15, the loops will run for a total of 15 * 15 = 225 iterations. 
