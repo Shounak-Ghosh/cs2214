@@ -25,14 +25,18 @@ module four_bit_adder_subtractor(A, B, Op, S, Cout);
    // We need three wires to transmit the carry bits between
    // the individual full adders.
    wire         C1, C2, C3;
+   wire final_carry;
+   wire [3:0] final_B;
+   // If Op is 1, we negate all the bits of B and set the carry in to 1.
+   assign final_B = Op  ? ~B : B;
+   assign final_carry = Op ? 1'b1 : 1'b0;
 
    // Here we are just instantiating four separate full adder modules
    // connected by wires. 
-   // If Op is 1, we negate all the bits of B and set the carry in to 1.
-   full_adder_nodelay FA1(A[0], Op ? ~B[0]: B[0], Op ? 1'b1: 1'b0, S[0], C1);
-   full_adder_nodelay FA2(A[1], Op ? ~B[1]: B[1], C1,  S[1], C2);
-   full_adder_nodelay FA3(A[2], Op ? ~B[2]: B[2], C2,  S[2], C3);
-   full_adder_nodelay FA4(A[3], Op ? ~B[3]: B[3], C3,  S[3], Cout);
+   full_adder_nodelay FA1(A[0], final_B[0], final_carry, S[0], C1);
+   full_adder_nodelay FA2(A[1], final_B[1], C1,  S[1], C2);
+   full_adder_nodelay FA3(A[2], final_B[2], C2,  S[2], C3);
+   full_adder_nodelay FA4(A[3], final_B[3], C3,  S[3], Cout);
    
 endmodule // four_bit_rca_nodelay
 

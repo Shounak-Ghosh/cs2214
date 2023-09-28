@@ -22,4 +22,4 @@ module alu(A, B, Op, S);
 
 
 
-endmodule
+endmodule // alu
