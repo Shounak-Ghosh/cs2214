@@ -1,0 +1,38 @@
+1. We can trace program execution. ROM[14] compares the value of Rg0 to itself, and since Rg0 is equal to itself, the zero flag is set to 1. ROM[15] is supposed to increment the program counter by 14, but since the zero flag is set to 1, the program counter is incremented by 1 instead. This causes the program to loop back to ROM[0], which is the next instruction for execution.
+
+2. As per the instructions, we begin by moving the values we would like to compare into Rg0 and Rg1. We then move the value of Rg0 into Rg2. Initially, we compare Rg1 and Rg2 in the case that the values are equal. If this instruction sets the zero flag, we jump to an instruction which sets Rg2 to 1 and halts program execution. However, if this is not the case, we continue onto a comparision between Rg2 and 0. If this comparision sets the zero flag, we jump to an instruction that sets Rg2 to 0 and halts program execution. Otherwise, we add 1 to Rg2 and jump back to the instruction that compares Rg1 and Rg2. Essentially, we are incrementing Rg2 until it is equal to Rg1, at which point we set Rg2 to 1 and halt program execution. However, if we manage to increment Rg2 to 0, integer overflow has occured and we set Rg2 to 0 and halt program execution.
+
+3a. The logic of the program counter doesnt change, but we need to allocate 10 bits to the program counter instead of 4 bits. This is because we have 1024 instructions, which requires 10 bits to represent.
+3b. Since we are not adding any new opcodes, we do not need to change the number of bits needed to store them currently (4 total). Similarly, since we are not changing the number of registers, we do not need to change the number of bits needed to store the source and dest registers (4 total). However, we do need to change the number of bits needed for the immediate value to 10, since we are now using 10 bits to represent the program counter (10 total). This results in a total of 4 + 4 + 10 = 18 bits needed to represent each instruction. 
+3c. While we are not changing the number of registers, we do need to increase the number of bits needed to represent each register from 4 to 10. This is because we are now using 10 bits to represent the program counter, and we want to be able to use the same number of bits to represent each register as we do the program counter. 
+3d. The ROM array will expand to 1024 by 18. This is because we are now accomodating 1024 instructions, and each instruction requires 18 bits to represent, as discussed previously.
+3e. The ALUs will both need 10-bit inputs and outputs, since we have increased the number of bits available in not only the immediate value for instructions but also the registers.
+
+4. As per the instructions, we begin by moving the values we would like ot compare into Rg0 and Rg1. We then move the value of Rg0 into Rg3, and the value 0 into Rg2. We then compare Rg3 to the value 0. If the zero flag is set, we jump to an instruction that effectively halts the program. Otherwise, we subtract the value one from Rg3 and add the value stored in Rg1 to Rg2. We then jump back to the instruction that compares Rg3 to 0. Essentially, we are subtracting 1 from Rg3 until it is equal to 0, at which point we halt program execution. However, we are also adding the value stored in Rg1 to Rg2 each time we subtract 1 from Rg3. This means that we are effectively multiplying the value stored in Rg1 by the value stored in Rg0, and storing the result in Rg2. 
+
+5a. The program counter stops at 4.
+5b. The final value of $1 is 0. 
+5c. The value of the label xyz is 5.
+5d. The value of the label abc is 7.
+5e. The address of the jeq instruction is 2.
+5f. The formula for storing a relative address is rel_imm = imm - pc - 1. In this case imm = 5 and pc = 2, so rel_imm = 5 - 2 - 1 = 2, or 7b'0000010.
+
+6a. j target
+    010 0000000000011
+6b. jeq $4, $0, target
+    110 100 000 111001
+6c. slti $3, $4, 10
+    sw $3, isless($0)
+    111 100 011 0001010
+    101 000 011 0000011
+6d. lw $3, 29($0)
+    sw $3, 30($0)
+    100 000 011 0011101
+    101 000 011 0011110
+
+7.  addi $1, $1, 1
+    add $2, $2, $2
+    halt
+    001 001 001 000 0001
+	000 010 010 010 0000
+	010 000 000 000 0010
