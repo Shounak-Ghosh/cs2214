@@ -1,0 +1,66 @@
+1.  # Store the value 1009 at memory location 456.
+    .fill 1099
+    .fill 456
+    lw $1, 0($0) # store 1099 into Rg1
+    lw $2, 1($0) # store 456 into Rg2
+    sw $1, 0($2) # store the value of Rg1 (1099) into memory location 456
+    halt
+    
+   
+
+2. # Read the values at cells 20 and 30, and store the sum in cell 40.
+    lw    $1, 20($0)
+    lw    $2, 30($0)
+    add   $2, $1, $2
+    sw    $2, 40($0)
+    halt
+
+3. # Add 1 to  each of the memory cells between 10 and 20, inclusive.
+    movi $1, 10
+    movi $2, 20
+loop:
+    lw $3, 0($1)
+    addi $3, $3, 1
+    sw $3, 0($1)
+    jeq $1, $2, stop
+    addi $1, $1, 1
+    j loop
+stop:
+    halt
+
+001 000 001 0001010
+001 000 010 0010100
+100 001 011 0000000
+001 011 011 0000001
+101 001 011 0000000
+110 001 010 0001000
+001 001 001 0000001
+010 000000000000010
+010 000000000001000
+
+4. # Reverse the contents of the memory cells between the labels beginning and end 
+movi $1, beginning
+movi $2, -1
+addi $2, $2, end
+movi $5, 1
+loop:
+    jeq $1, $2, stop
+    slt $6, $2, $1
+    jeq $6, $5, stop
+    lw $3, 0($1)
+    lw $4, 0($2)
+    sw $3, 0($2)
+    sw $4, 0($1)
+    addi $1, $1, 1
+    addi $2, $2, -1
+    j loop
+stop:
+    halt
+
+# It is assumed that the labels beginning and end are defined somewhere in memory and that the memory cells between (if they exist) them are filled with values
+
+
+
+
+
+
