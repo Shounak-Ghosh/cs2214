@@ -1,0 +1,43 @@
+1. E15 and E20 are similar in overarching architecture. Both systems allocate space for RAM to store program instructions, and registers for the programs to modify. However, E20 expands upon the scope of computations possible. E15 only allocates space for 4 4-bit registers, while E20 has 8 16-bit registers, and E15 only accomodates 4 bit memory adresses for program instruction whereas E20 holds 13 bit memory adresses.
+
+2a. 0000010101000100
+    Sets register 4 to 1 if source register 1 is less than register 2, if it isn't, set it to 0.
+2b. 0100000000001111
+    Sets the program counter to line 15. 
+2c. 0010000010000001
+    Adds immediate value and uses register 1 as a source register, the result, imm+0=imm is stored inside the destination register in register 1
+2d. 1010010000000000
+    Stores the source register's value, 0 in the memory slot of 0+value in register 1, which means it will just make register 1 0.
+
+//TODO check the answers for 3 below
+3a. add $0,$0,$0
+    Sets register 0 to the sum of register 0 and register 0, which is 0. This has no effect.
+3b. jeq $1,$0,pc -1
+    Jump to address 127+pc, if register 1 and register 0 are equal.
+3c. lw $5, 31($2)
+     Load sthe value in address 31+value in register 2 and then store it inside the destination register 5.
+
+4a. movi $5,34
+4b. add $3, $1, $2
+4c. add $6, $5, $5
+4d. slti $5, $4, 10
+4e. addi $2, $1, 50
+    jr $2
+4f. slt $3, $2, $1
+    req $3, $0, destination
+4g. lw $1,9($0)
+4h. lw $2,hyoid($0)
+4i. lw $3,0($4)
+4j. jeq $2, $0, check_three
+      check three:
+      jeq $3, $0, set_one
+      j done
+
+      set_one:
+      movi$1,1
+
+      done:
+      halt
+
+5. $3 = 20
+   $4 = 70

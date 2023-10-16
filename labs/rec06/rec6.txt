@@ -1,0 +1,40 @@
+1. A multiplexer is similar to an if statement because it lets us execute a given statement if a condition is met. However, a multiplexer is more similar to a switch statement than an if statement, because we are able to chain them together to produce different outputs for different cases. 
+
+2. The 7 bit immediate value needs to be added to a 16 bit register.  Sign extend is used instead of 0-extend to preserve the sign of the immediate value. 
+
+3. The ALU result is not used so it does not matter. for Jeq, its used to subtract.
+
+4a.
+
+    FUNCalu = 0
+    MUXalu  = 1
+    MUXpc    = 1
+    MUXrf    = 0
+    MUXtgt    = 0
+    MUXdst    = 0
+    WErf    = 1
+    WEdmem    = 0
+
+b) FUNCalu    = 0
+    MUXalu    = 0
+    MUXpc    = 0
+    MUXrf    = 0
+    MUXtgt    = NA
+    MUXdst    = NA
+    WErf    = 0
+    WEdmem    = 0
+    
+   c)    
+    FUNCalu    = 0
+    MUXalu    = 1
+    MUXpc    = 1
+    MUXrf    = 0
+    MUXtgt    = 2
+    MUXdst    = 0
+    WErf    = 1
+    WEdmd    = 0
+
+
+5. Jump instruction. This is mainly indicated by the usage of a 13-bit immediate value for MUXpc, the lack of any writing to registers or data. It is not a jump and link, as it does not use the literal 7 as MUXdst.
+
+6. This is a jump and link instruction. This is mainly indicated by the usage of the 13-bit immediate value for MUXpc and the usage of the literal 7 as MUXdst.
