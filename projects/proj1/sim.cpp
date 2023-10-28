@@ -151,34 +151,34 @@ int main(int argc, char *argv[]) {
             u_int16_t regDst = (line >> 4) & 7; // bits 4-6
             u_int16_t imm = line & 15; // bits 0-3
 
-            if (imm == 0) {
+            if (imm == 0) { // add
                 regs[regDst] = regs[regA] + regs[regB];
                 pc += 1;
             }
-            else if (imm == 1) {
+            else if (imm == 1) { // sub
                 regs[regDst] = regs[regA] - regs[regB];
                 pc += 1;
             }
-            else if (imm == 2) {
+            else if (imm == 2) { // or
                 regs[regDst] = regs[regA] | regs[regB];
                 pc += 1;
             }
-            else if (imm == 3) {
+            else if (imm == 3) { // and
                 regs[regDst] = regs[regA] & regs[regB];
                 pc += 1;
             }
-            else if (imm == 4) {
+            else if (imm == 4) { // slt
                 regs[regDst] = regs[regA] < regs[regB] ? 1 : 0;
                 pc += 1;
             }
-            else if (imm == 8) {
+            else if (imm == 8) { // jr
                 pc = regs[regA];
             }
             else {
                 cerr << "Invalid instruction" << endl;
             }
         }
-        else if (opcode == 1)  {
+        else if (opcode == 1)  { // addi
             u_int16_t regSrc = (line >> 10) & 7; // bits 10-12
             u_int16_t regDst = (line >> 7) & 7; // bits 7-9
             u_int16_t imm = line & 127; // bits 0-6
@@ -186,22 +186,25 @@ int main(int argc, char *argv[]) {
             if (imm & 64) imm |= 0xFF80; //TODO check if this works
             regs[regDst] = regs[regSrc] + imm;
             pc += 1;
+            cout << "addi " << regSrc << "(" << regs[regSrc] << ") " << regDst << "(" << regs[regDst] << ") "  << endl;
         }
-        else if (opcode == 2) {
+        else if (opcode == 2) { // j
             u_int16_t imm = line & 8191; // bits 0-12
             // check for halt
             if (pc == imm) {
+                cout << "halt" << endl;
                 halt = true;
                 break;
             }
+            cout << "j " << imm << endl;
             pc = imm;
         }
-        else if (opcode == 3) {
+        else if (opcode == 3) { // jal
             u_int16_t imm = line & 8191; // bits 0-12
             regs[7] = pc + 1;
             pc = imm;
         }
-        else if (opcode == 4) {
+        else if (opcode == 4) { // lw
             u_int16_t regAddr = (line >> 10) & 7; // bits 10-12
             u_int16_t regDst = (line >> 7) & 7; // bits 7-9
             u_int16_t imm = line & 127; // bits 0-6
@@ -210,7 +213,7 @@ int main(int argc, char *argv[]) {
             regs[regDst] = memory[regs[regAddr] + imm];
             pc += 1;
         }
-        else if (opcode == 5) {
+        else if (opcode == 5) { // sw
             u_int16_t regAddr = (line >> 10) & 7; // bits 10-12
             u_int16_t regSrc = (line >> 7) & 7; // bits 7-9
             u_int16_t imm = line & 127; // bits 0-6
@@ -219,21 +222,24 @@ int main(int argc, char *argv[]) {
             memory[regs[regAddr] + imm] = regs[regSrc];
             pc += 1;
         }
-        else if (opcode == 6) {
+        else if (opcode == 6) { // jeq
+            cout << "jeq" << endl;
             u_int16_t regA = (line >> 10) & 7; // bits 10-12
             u_int16_t regB = (line >> 7) & 7; // bits 7-9
             u_int16_t rel_imm = line & 127; // bits 0-6
             // sign extend 7 bit immediate to 16 bits
             if (rel_imm & 64) rel_imm |= 0xFF80;
-            pc = regs[regA] == regs[regB] ? pc + rel_imm : pc + 1;
+            pc = regs[regA] == regs[regB] ? pc + 1 + rel_imm : pc + 1;
         }
-        else if (opcode == 7) {
+        else if (opcode == 7) { // slti
             u_int16_t regSrc = (line >> 10) & 7; // bits 10-12
             u_int16_t regDst = (line >> 7) & 7; // bits 7-9
             u_int16_t imm = line & 127; // bits 0-6
             // sign extend 7 bit immediate to 16 bits
             if (imm & 64) imm |= 0xFF80;
             regs[regDst] = regs[regSrc] < imm ? 1 : 0;
+            pc += 1;
+            cout << "slti " << regSrc << "(" << regs[regSrc] << ") " << regDst << "(" << regs[regDst] << ") "  << endl;
         }
         else { // .fill or error
             break;
