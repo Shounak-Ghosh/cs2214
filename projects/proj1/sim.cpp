@@ -1,7 +1,7 @@
 /*
 CS-UY 2214
 Adapted from Jeff Epstein
-Starter code for E20 simulator
+E20 Simulator (load_machine_code and print_state were provided)
 sim.cpp
 */
 
@@ -140,213 +140,116 @@ int main(int argc, char *argv[]) {
 
     bool halt = false;
     while (!halt) { 
-        
-        // decode current instruction, if possible
+        // decode current line, if possible
         u_int16_t line = memory[pc];
         u_int16_t opcode = line >> 13;
 
-        if (opcode == 0) {
-            u_int16_t regA = (line >> 10) & 7; // bits 10-12
-            u_int16_t regB = (line >> 7) & 7; // bits 7-9
-            u_int16_t regDst = (line >> 4) & 7; // bits 4-6
-            u_int16_t imm = line & 15; // bits 0-3
+        switch (opcode) {
+            case 0: {
+                u_int16_t regA = (line >> 10) & 7; // bits 10-12
+                u_int16_t regB = (line >> 7) & 7; // bits 7-9
+                u_int16_t regDst = (line >> 4) & 7; // bits 4-6
+                u_int16_t imm = line & 15; // bits 0-3
 
-            if (imm == 0) { // add
-                regs[regDst] = regs[regA] + regs[regB];
-                pc += 1;
-            }
-            else if (imm == 1) { // sub
-                regs[regDst] = regs[regA] - regs[regB];
-                pc += 1;
-            }
-            else if (imm == 2) { // or
-                regs[regDst] = regs[regA] | regs[regB];
-                pc += 1;
-            }
-            else if (imm == 3) { // and
-                regs[regDst] = regs[regA] & regs[regB];
-                pc += 1;
-            }
-            else if (imm == 4) { // slt
-                regs[regDst] = regs[regA] < regs[regB] ? 1 : 0;
-                pc += 1;
-            }
-            else if (imm == 8) { // jr
-                pc = regs[regA];
-            }
-            else {
-                cerr << "Invalid instruction" << endl;
-            }
-        }
-        else if (opcode == 1)  { // addi
-            u_int16_t regSrc = (line >> 10) & 7; // bits 10-12
-            u_int16_t regDst = (line >> 7) & 7; // bits 7-9
-            u_int16_t imm = line & 127; // bits 0-6
-            // sign extend 7 bit immediate to 16 bits
-            if (imm & 64) imm |= 0xFF80; //TODO check if this works
-            regs[regDst] = regs[regSrc] + imm;
-            pc += 1;
-            cout << "addi " << regSrc << "(" << regs[regSrc] << ") " << regDst << "(" << regs[regDst] << ") "  << endl;
-        }
-        else if (opcode == 2) { // j
-            u_int16_t imm = line & 8191; // bits 0-12
-            // check for halt
-            if (pc == imm) {
-                cout << "halt" << endl;
-                halt = true;
+                switch (imm) {
+                    case 0: { // add
+                        regs[regDst] = regs[regA] + regs[regB];
+                        pc++;
+                        break;
+                    }
+                    case 1: { // sub
+                        regs[regDst] = regs[regA] - regs[regB];
+                        pc++;
+                        break;
+                    }
+                    case 2: { // or
+                        regs[regDst] = regs[regA] | regs[regB];
+                        pc++;
+                        break;
+                    }
+                    case 3: { // and
+                        regs[regDst] = regs[regA] & regs[regB];
+                        pc++;
+                        break;
+                    }
+                    case 4: { // slt
+                        regs[regDst] = (regs[regA] < regs[regB]) ? 1 : 0;
+                        pc++;
+                        break;
+                    }
+                    case 8: { // jr
+                        pc = regs[regA];
+                        break;
+                    }
+                }
                 break;
             }
-            cout << "j " << imm << endl;
-            pc = imm;
+            case 1: { // addi
+                u_int16_t regSrc = (line >> 10) & 0x7; // bits 10-12
+                u_int16_t regDst = (line >> 7) & 0x7; // bits 7-9
+                u_int16_t imm = line & 127; // bits 0-6
+                // sign extend 7 bit immediate to 16 bits
+                if (imm & 64) imm |= 0xFF80;
+                regs[regDst] = regs[regSrc] + imm;
+                pc++;
+                break;
+            }
+            case 2: { // j
+                u_int16_t imm = line & 8191; // bits 0-12
+                if (pc == imm) halt = true; // tight loop, halt
+                pc = imm;
+                break;
+            }
+            case 3: { // jal
+                u_int16_t imm = line & 8191; // bits 0-12
+                regs[7] = pc + 1;
+                pc = imm;
+                break;
+            }
+            case 4: { // lw
+                u_int16_t regAddr = (line >> 10) & 0x7; // bits 10-12
+                u_int16_t regDst = (line >> 7) & 0x7; // bits 7-9
+                u_int16_t imm = line & 127; // bits 0-6
+                // sign extend 7 bit immediate to 16 bits
+                if (imm & 64) imm |= 0xFF80;
+                regs[regDst] = memory[regs[regAddr] + imm];
+                pc++;
+                break;
+            }
+            case 5: { // sw
+                u_int16_t regAddr = (line >> 10) & 0x7; // bits 10-12
+                u_int16_t regSrc = (line >> 7) & 0x7; // bits 7-9
+                u_int16_t imm = line & 127; // bits 0-6
+                // sign extend 7 bit immediate to 16 bits
+                if (imm & 64) imm |= 0xFF80;
+                memory[regs[regAddr] + imm] = regs[regSrc];
+                pc++;
+                break;
+            }
+            case 6: { // jeq
+                u_int16_t regA = (line >> 10) & 0x7; // bits 10-12
+                u_int16_t regB = (line >> 7) & 0x7; // bits 7-9
+                u_int16_t rel_imm = line & 127; // bits 0-6
+                // sign extend 7 bit immediate to 16 bits
+                if (rel_imm & 64) rel_imm |= 0xFF80;
+                pc = (regs[regA] == regs[regB]) ? pc + 1 + rel_imm : pc + 1;
+                break;
+            }
+            case 7: { //slti
+                u_int16_t regSrc = (line >> 10) & 0x7; // bits 10-12
+                u_int16_t regDst = (line >> 7) & 0x7; // bits 7-9
+                u_int16_t imm = line & 127; // bits 0-6
+                // sign extend 7 bit immediate to 16 bits
+                if (imm & 64) imm |= 0xFF80;
+                regs[regDst] = (regs[regSrc] < imm) ? 1 : 0;
+                pc++;
+                break;
+            }
         }
-        else if (opcode == 3) { // jal
-            u_int16_t imm = line & 8191; // bits 0-12
-            regs[7] = pc + 1;
-            pc = imm;
-        }
-        else if (opcode == 4) { // lw
-            u_int16_t regAddr = (line >> 10) & 7; // bits 10-12
-            u_int16_t regDst = (line >> 7) & 7; // bits 7-9
-            u_int16_t imm = line & 127; // bits 0-6
-            // sign extend 7 bit immediate to 16 bits
-            if (imm & 64) imm |= 0xFF80;
-            regs[regDst] = memory[regs[regAddr] + imm];
-            pc += 1;
-        }
-        else if (opcode == 5) { // sw
-            u_int16_t regAddr = (line >> 10) & 7; // bits 10-12
-            u_int16_t regSrc = (line >> 7) & 7; // bits 7-9
-            u_int16_t imm = line & 127; // bits 0-6
-            // sign extend 7 bit immediate to 16 bits
-            if (imm & 64) imm |= 0xFF80;
-            memory[regs[regAddr] + imm] = regs[regSrc];
-            pc += 1;
-        }
-        else if (opcode == 6) { // jeq
-            cout << "jeq" << endl;
-            u_int16_t regA = (line >> 10) & 7; // bits 10-12
-            u_int16_t regB = (line >> 7) & 7; // bits 7-9
-            u_int16_t rel_imm = line & 127; // bits 0-6
-            // sign extend 7 bit immediate to 16 bits
-            if (rel_imm & 64) rel_imm |= 0xFF80;
-            pc = regs[regA] == regs[regB] ? pc + 1 + rel_imm : pc + 1;
-        }
-        else if (opcode == 7) { // slti
-            u_int16_t regSrc = (line >> 10) & 7; // bits 10-12
-            u_int16_t regDst = (line >> 7) & 7; // bits 7-9
-            u_int16_t imm = line & 127; // bits 0-6
-            // sign extend 7 bit immediate to 16 bits
-            if (imm & 64) imm |= 0xFF80;
-            regs[regDst] = regs[regSrc] < imm ? 1 : 0;
-            pc += 1;
-            cout << "slti " << regSrc << "(" << regs[regSrc] << ") " << regDst << "(" << regs[regDst] << ") "  << endl;
-        }
-        else { // .fill or error
-            break;
-        }
-        
-       
-        // switch(opcode) {
-        //     case 0: { // add, sub, or, and, slt, jr 
-        //         unsigned regA = (line >> 10) & 7; // bits 10-12
-        //         unsigned regB = (line >> 7) & 7; // bits 7-9
-        //         unsigned regDst = (line >> 4) & 7; // bits 4-6
-        //         unsigned imm = line & 15; // bits 0-3
-                
-        //         switch (imm) {
-        //             case 0: { // add
-        //                 regs[regDst] = regs[regA] + regs[regB];
-        //                 pc += 1;
-        //             }
-        //             case 1: { // sub
-        //                 regs[regDst] = regs[regA] - regs[regB];
-        //                 pc +=1;
-        //             }
-        //             case 2: { // or
-        //                 regs[regDst] = regs[regA] | regs[regB];
-        //                 pc += 1;
-        //             }
-        //             case 3: { // and
-        //                 regs[regDst] = regs[regA] & regs[regB];
-        //                 pc += 1;
-        //             }
-        //             case 4: { // slt
-        //                 regs[regDst] = regs[regA] < regs[regB] ? 1 : 0;
-        //                 pc += 1;
-        //             }
-        //             case 8: { // jr
-        //                 pc = regs[regA];
-        //             }
-        //             default: // error
-        //                 cerr << "Invalid instruction" << endl;
-        //         }
-        //     }
-        //     case 1: { // addi
-        //         unsigned regSrc = (line >> 10) & 7; // bits 10-12
-        //         unsigned regDst = (line >> 7) & 7; // bits 7-9
-        //         unsigned imm = line & 127; // bits 0-6
-        //         // sign extend 7 bit immediate to 16 bits
-        //         if (imm & 64) imm |= 0xFF80; //TODO check if this works
-        //         regs[regDst] = regs[regSrc] + imm;
-        //         pc += 1;
-        //     }
-        //     case 2: { // j
-        //         unsigned imm = line & 8191; // bits 0-12
-        //         // check for halt
-        //         if (pc == imm) {
-        //             halt = true;
-        //             break;
-        //         }
-        //         pc = imm;
-        //     }
-        //     case 3: { // jal
-        //         unsigned imm = line & 8191; // bits 0-12
-        //         regs[7] = pc + 1;
-        //         pc = imm;
-        //     }
-        //     case 4: { // lw
-        //         unsigned regAddr = (line >> 10) & 7; // bits 10-12
-        //         unsigned regDst = (line >> 7) & 7; // bits 7-9
-        //         unsigned imm = line & 127; // bits 0-6
-        //         // sign extend 7 bit immediate to 16 bits
-        //         if (imm & 64) imm |= 0xFF80; 
-        //         regs[regDst] = memory[regs[regAddr] + imm];
-        //         pc += 1;
-        //     }
-        //     case 5: { // sw
-        //         unsigned regAddr = (line >> 10) & 7; // bits 10-12
-        //         unsigned regSrc = (line >> 7) & 7; // bits 7-9
-        //         unsigned imm = line & 127; // bits 0-6
-        //         // sign extend 7 bit immediate to 16 bits
-        //         if (imm & 64) imm |= 0xFF80;
-        //         memory[regs[regAddr] + imm] = regs[regSrc];
-        //         pc += 1;
-        //     }
-        //     case 6: { // jeq
-        //         unsigned regA = (line >> 10) & 7; // bits 10-12
-        //         unsigned regB = (line >> 7) & 7; // bits 7-9
-        //         unsigned rel_imm = line & 127; // bits 0-6
-        //         // sign extend 7 bit immediate to 16 bits
-        //         if (rel_imm & 64) rel_imm |= 0xFF80;
-        //         pc = regs[regA] == regs[regB] ? pc + rel_imm : pc + 1;
-        //     }
-        //     case 7: { // slti 
-        //         unsigned regSrc = (line >> 10) & 7; // bits 10-12
-        //         unsigned regDst = (line >> 7) & 7; // bits 7-9
-        //         unsigned imm = line & 127; // bits 0-6
-        //         // sign extend 7 bit immediate to 16 bits
-        //         if (imm & 64) imm |= 0xFF80;
-        //         regs[regDst] = regs[regSrc] < imm ? 1 : 0;
-        //     }
-        //     default: // .fill or error
-        //         break;
-        // }
-
     }
 
     // Print the final state of the simulator before ending, using print_state
     print_state(pc, regs, memory, 128);
-
     return 0;
 }
 //ra0Eequ6ucie6Jei0koh6phishohm9
