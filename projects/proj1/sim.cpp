@@ -31,7 +31,7 @@ size_t const static REG_SIZE = 1<<16;
     @param f Open file to read from
     @param mem Array represetnting memory into which to read program
 */
-void load_machine_code(ifstream &f, u_int16_t mem[]) {
+void load_machine_code(ifstream &f, uint16_t mem[]) {
     regex machine_code_re("^ram\\[(\\d+)\\] = 16'b(\\d+);.*$");
     size_t expectedaddr = 0;
     string line;
@@ -66,7 +66,7 @@ void load_machine_code(ifstream &f, u_int16_t mem[]) {
     @param memory Final value of memory
     @param memquantity How many words of memory to dump
 */
-void print_state(unsigned pc, u_int16_t regs[], uint16_t memory[], size_t memquantity) {
+void print_state(uint16_t pc, uint16_t regs[], uint16_t memory[], size_t memquantity) {
     cout << setfill(' ');
     cout << "Final state:" << endl;
     cout << "\tpc=" <<setw(5)<< pc << endl;
@@ -131,7 +131,7 @@ int main(int argc, char *argv[]) {
     }
 
     // initialize pc, regs, memory
-    u_int16_t pc = 0;
+    uint16_t pc = 0;
     uint16_t regs[NUM_REGS] = {0}; // all registers are initialized to 0
     uint16_t memory[MEM_SIZE] = {0}; // all memory is initialized to 0
 
@@ -141,15 +141,20 @@ int main(int argc, char *argv[]) {
     bool halt = false;
     while (!halt) { 
         // decode current line, if possible
-        u_int16_t line = memory[pc];
-        u_int16_t opcode = line >> 13;
+        uint16_t line = memory[pc];
+        uint16_t opcode = line >> 13;
 
         switch (opcode) {
             case 0: {
-                u_int16_t regA = (line >> 10) & 7; // bits 10-12
-                u_int16_t regB = (line >> 7) & 7; // bits 7-9
-                u_int16_t regDst = (line >> 4) & 7; // bits 4-6
-                u_int16_t imm = line & 15; // bits 0-3
+                uint16_t regA = (line >> 10) & 7; // bits 10-12
+                uint16_t regB = (line >> 7) & 7; // bits 7-9
+                uint16_t regDst = (line >> 4) & 7; // bits 4-6
+                uint16_t imm = line & 15; // bits 0-3
+
+                // if (opcode != 8 && regDst== 0) {
+                //     cerr << "Invalid instruction: destination register cannot be $0" << endl;
+                //     exit(1);
+                // }
 
                 switch (imm) {
                     case 0: { // add
@@ -164,7 +169,7 @@ int main(int argc, char *argv[]) {
                     }
                     case 2: { // or
                         regs[regDst] = regs[regA] | regs[regB];
-                        pc++;
+                        pc++;                       
                         break;
                     }
                     case 3: { // and
@@ -185,9 +190,9 @@ int main(int argc, char *argv[]) {
                 break;
             }
             case 1: { // addi
-                u_int16_t regSrc = (line >> 10) & 0x7; // bits 10-12
-                u_int16_t regDst = (line >> 7) & 0x7; // bits 7-9
-                u_int16_t imm = line & 127; // bits 0-6
+                uint16_t regSrc = (line >> 10) & 0x7; // bits 10-12
+                uint16_t regDst = (line >> 7) & 0x7; // bits 7-9
+                uint16_t imm = line & 127; // bits 0-6
                 // sign extend 7 bit immediate to 16 bits
                 if (imm & 64) imm |= 0xFF80;
                 regs[regDst] = regs[regSrc] + imm;
@@ -195,21 +200,21 @@ int main(int argc, char *argv[]) {
                 break;
             }
             case 2: { // j
-                u_int16_t imm = line & 8191; // bits 0-12
+                uint16_t imm = line & 8191; // bits 0-12
                 if (pc == imm) halt = true; // tight loop, halt
                 pc = imm;
                 break;
             }
             case 3: { // jal
-                u_int16_t imm = line & 8191; // bits 0-12
+                uint16_t imm = line & 8191; // bits 0-12
                 regs[7] = pc + 1;
                 pc = imm;
                 break;
             }
             case 4: { // lw
-                u_int16_t regAddr = (line >> 10) & 0x7; // bits 10-12
-                u_int16_t regDst = (line >> 7) & 0x7; // bits 7-9
-                u_int16_t imm = line & 127; // bits 0-6
+                uint16_t regAddr = (line >> 10) & 0x7; // bits 10-12
+                uint16_t regDst = (line >> 7) & 0x7; // bits 7-9
+                uint16_t imm = line & 127; // bits 0-6
                 // sign extend 7 bit immediate to 16 bits
                 if (imm & 64) imm |= 0xFF80;
                 regs[regDst] = memory[regs[regAddr] + imm];
@@ -217,9 +222,9 @@ int main(int argc, char *argv[]) {
                 break;
             }
             case 5: { // sw
-                u_int16_t regAddr = (line >> 10) & 0x7; // bits 10-12
-                u_int16_t regSrc = (line >> 7) & 0x7; // bits 7-9
-                u_int16_t imm = line & 127; // bits 0-6
+                uint16_t regAddr = (line >> 10) & 0x7; // bits 10-12
+                uint16_t regSrc = (line >> 7) & 0x7; // bits 7-9
+                uint16_t imm = line & 127; // bits 0-6
                 // sign extend 7 bit immediate to 16 bits
                 if (imm & 64) imm |= 0xFF80;
                 memory[regs[regAddr] + imm] = regs[regSrc];
@@ -227,18 +232,18 @@ int main(int argc, char *argv[]) {
                 break;
             }
             case 6: { // jeq
-                u_int16_t regA = (line >> 10) & 0x7; // bits 10-12
-                u_int16_t regB = (line >> 7) & 0x7; // bits 7-9
-                u_int16_t rel_imm = line & 127; // bits 0-6
+                uint16_t regA = (line >> 10) & 0x7; // bits 10-12
+                uint16_t regB = (line >> 7) & 0x7; // bits 7-9
+                uint16_t rel_imm = line & 127; // bits 0-6
                 // sign extend 7 bit immediate to 16 bits
                 if (rel_imm & 64) rel_imm |= 0xFF80;
                 pc = (regs[regA] == regs[regB]) ? pc + 1 + rel_imm : pc + 1;
                 break;
             }
             case 7: { //slti
-                u_int16_t regSrc = (line >> 10) & 0x7; // bits 10-12
-                u_int16_t regDst = (line >> 7) & 0x7; // bits 7-9
-                u_int16_t imm = line & 127; // bits 0-6
+                uint16_t regSrc = (line >> 10) & 0x7; // bits 10-12
+                uint16_t regDst = (line >> 7) & 0x7; // bits 7-9
+                uint16_t imm = line & 127; // bits 0-6
                 // sign extend 7 bit immediate to 16 bits
                 if (imm & 64) imm |= 0xFF80;
                 regs[regDst] = (regs[regSrc] < imm) ? 1 : 0;
