@@ -1,0 +1,62 @@
+1a. 16 bytes
+1b. 64*16=1024 bytes
+
+2.
+# | A | B | C |
+---------------
+12| 4 | 1 | M |
+13| 5 | 1 | M |
+6 | 6 | 0 | M |
+0 | 0 | 0 | M |
+2 | 2 | 0 | M |
+5 | 5 | 0 | E |
+14| 6 | 1 | E |
+14| 6 | 1 | H |
+1 | 1 | 0 | M |
+8 | 0 | 1 | E |
+
+3.
+# | A | B | C |
+---------------
+6 | 2 | 1 | M |
+6 | 2 | 1 | H |
+3 | 3 | 0 | M |
+0 | 0 | 0 | M |
+1 | 1 | 0 | M |
+2 | 2 | 0 | E |
+7 | 3 | 1 | E |
+7 | 3 | 1 | H |
+0 | 0 | 0 | H |
+4 | 0 | 1 | E |
+
+4.
+# | A | B | C |
+---------------
+ 3| 1 | 1 | M |
+ 3| 1 | 1 | H |
+ 1| 1 | 0 | E |
+ 0| 0 | 0 | M |
+ 0| 0 | 0 | H |
+ 1| 1 | 0 | H |
+ 3| 1 | 1 | E |
+ 3| 1 | 1 | H |
+ 0| 0 | 0 | H |
+ 2| 0 | 1 | E |
+
+ 5a. 4096
+ 5b. 9
+ 5c. 12
+ 5d. 11
+
+6a. What should happen if a program uses slt to compare a negative number to a positive number?
+6b. 
+
+movi $1, -5
+movi $2, 5
+slt $3, $1, $2
+slt $4, $2, $1
+halt
+
+6c. Shared with Arthur Lee :)
+6d. Arthur found my edge case useful!
+6e. Recieved addi test file :)

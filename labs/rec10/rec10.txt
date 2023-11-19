@@ -1,0 +1,32 @@
+1. These processes occur when writing to a memory block that has been cached. Write-through: send to memory and cache immediately.
+Write-back: sent to cache immediately, send to memory when cache is evicted.
+
+2. Both these policies are apply when writing to a non-cached memory block. Write-around: send to memory immediately, do not cache. Write-allocate: Get the block containing the memory adress we want into cache, then we can choose to write-back or write-through, resulting in eventual memory storage.
+
+3. A fully associative cache with a block size of 1
+
+4a.There will be a miss every 32nd memory access because new blocks will need to be loaded to the cache. Hit ratio: 31/32 
+
+4b. AMAT = 5 + (80 * (1-31/32)) = 7.5ns
+
+5. 
+    lw $1, 0($0) Block id = 0, Index = 0 Tag = 0
+    lw $1, 8($0) Block id = 4, Index = 0 Tag = 1
+    lw $1, 24($0) Block id = 12, Index = 0 Tag = 2
+    halt
+
+6a. 4 * 2 * 32 = 256 bits
+6b. 4 * 2 (32 + 10 + 1) = 344 bits
+7.
+    lw $1, 16($0) L1 miss blockid 8 index 0 tag 1, L2 miss blockid 4 index 0 tag 1
+    lw $1, 18($0) L1 miss blockid 9 index 1 tag 1, L2 hit blockid 4 index 0 tag 1
+
+8a. 2Mb = 2^21 bytes --> 4096 blocks
+8b. 9 bits
+8c. 32 - 9 = 23 bits
+8d. two blocks per row, 4096 blocks total --> 2048 rows
+e. log-base2(2048)=11 bits
+f. 32-9-11=12 bits
+g. 4096/8=512 rows
+h. log-base2(512)=9 bits
+i. 32-9-9=14 bits

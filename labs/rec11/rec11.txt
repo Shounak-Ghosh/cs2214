@@ -1,0 +1,25 @@
+1. A page table is used by the operating system to map virtual pages to physical pages.
+
+2. Not all virtual addresses are mapped to physical addresses therefore virtual addresses that do not map to physical addresses can be any size.
+
+3. Haven't learned TLB yet :)
+
+4a. 4 * 1024 * 1024 = 2^22 bytes --> 22 bits are required
+4b. 32 * 1024 * 1024  * 1024 = 2^35 bytes
+4c. 2^40/2^22 = 2^18 virtual pages
+4d. 18 bits are required
+4e. 2^35/2^22 = 2^13 physical pages
+4f. 13 bits are required
+4g. 2^18 page table entries, one per virtual page
+4h. each entry requires 13 + 3 = 16 bits, so 2^18 * 16 bits = 2^21 bytes
+
+5.
+    VA: 41, VPN: 5, PPN: 10, PA: 81
+    VA: 26, VPN: 3, PPN: 5, PA: 42
+    VA: 15, VPN: 1, PPN: 7, PA: 63, read-only
+    VA: 59, VPN: 7, PPN: 6, PA: 51
+    VA: 3, VPN: 0, PPN: 2, PA: 19
+    VA: 48, VPN: 6, PPN: 8, PA: 64
+    VA: 34, VPN: 4, PPN: none, PA: none, Page Fault
+
+6. Haven't learned TLB yet :) 
