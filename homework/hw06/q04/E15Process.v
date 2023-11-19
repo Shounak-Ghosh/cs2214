@@ -81,14 +81,16 @@ module E15Process(input clk);
        //    Move to next phase.
        decode:
          begin
-            // TODO: set mbEn, dbEn, addNotSub, and myState
-            //       based on opCode
+            // Set mbEn, dbEn, addNotSub, and myState based on opCode
             // determine dbEn
-            case(dst)
-              Rg0: dbEn <= bEn_R0;
-              Rg1: dbEn <= bEn_R1;
-              Rg2: dbEn <= bEn_R2;
-              Rg3: dbEn <= bEn_R3;
+            case(opCode)
+              movi, mov, addi, add, subi, sub, cmpi, cmp:
+                case(dst)
+                  Rg0: dbEn <= bEn_R0;
+                  Rg1: dbEn <= bEn_R1;
+                  Rg2: dbEn <= bEn_R2;
+                  Rg3: dbEn <= bEn_R3;
+                endcase
             endcase
             // determine mbEn
             case(opCode)
@@ -102,10 +104,10 @@ module E15Process(input clk);
                 endcase
             endcase
 
-            // determine addNotSub
+            // determine addNotSub -- cmp, cmpi require subtraction 
             case(opCode)
-              addi, add: addNotSub <= 1'b1;
-              subi, sub: addNotSub <= 1'b0;
+              addi, add: addNotSub <= 1;
+              subi, sub, cmpi, cmp: addNotSub <= 0;
             endcase
             // move onto next phase -- exec
             myState <= exec;
@@ -131,12 +133,12 @@ module E15Process(input clk);
                    zFlag <= zVal;
                 end
             endcase
-            // TODO: set pcIncr
-            pcIncr <= 2'b01; // default value
-            case(opCode)
-              jmp: pcIncr <= immData;
-              jz: pcIncr <= (zFlag) ? immData : 2'b01;
-              jnz: pcIncr <= (zFlag) ? 2'b01 : immData;
+            // Set pcIncr
+            pcIncr <= 1; // default value
+            case(opCode) // mbEN sets mBus to immData in decode phase
+              jmp: pcIncr <= mBus;
+              jz: pcIncr <= (zFlag) ? mBus : 1;
+              jnz: pcIncr <= (zFlag) ? 1 : mBus;
             endcase
             myState <= store;
          end
@@ -146,9 +148,9 @@ module E15Process(input clk);
        //    Increment pc and move to first phase.
        store:
          begin
-            // TODO: store value from mBus into register, if appropriate
+            // Store value from mBus into register, if appropriate
             case(opCode)
-              add, addi, sub, subi, cmp, cmpi, mov, movi:
+              add, addi, sub, subi, mov, movi:
                 case(dst)
                   Rg0: r0 <= mBus;
                   Rg1: r1 <= mBus;
@@ -157,9 +159,8 @@ module E15Process(input clk);
                 endcase
             endcase
             pc <= pcRes;
-            myState <= fetch;
+            myState <= fetch; // go back to fetch phase -- next instruction
          end
-       
      endcase
   
    // set mBus based on mbEn flag value

@@ -1,0 +1,82 @@
+2. The final value of $3 is 42. Lines 0-2 are evaluated as expected. 8618 is stored in $1 and 16388 is stored in $2. These values are added together (8618 + 16388 = 25006) and stored in $3. However, since there is no halt instruction, the program continues, executing the next line in memory, which is the 16-bit representation of 8618, or 16'b0010000110101010. This value is equivalent to addi $0, $3, 42, or movi $3, 42. As a result, 42 is stored in $3, overwriting the previous value of 25006. The program counter moves onto the next line of instruction, which is the 16bit representation of 16388, or 16'b0100000000000100. This translates to j 4. Since this "instruction" is stored at ram[4], it functions as a halt directive, resulting in program completion. 
+
+3a. 15 instructions will be executed not including the halt instruction.
+3b. 60 clock cycles
+3c. 60 microseconds
+
+4a. There is a conflict between a and c on $1. There is a conflict between b and c on $2. There is a conflict between e and d on $3.
+
+4b. 
+
++------+----+-----+-----+-----+-----+
+| Time | If | ID  | EX  | MEM | WB  |
++------+----+-----+-----+-----+-----+
+| 1    | a  |     |     |     |     |
++------+----+-----+-----+-----+-----+
+| 2    | b  | a   |     |     |     |
++------+----+-----+-----+-----+-----+
+| 3    | c  | b   | a   |     |     |
++------+----+-----+-----+-----+-----+
+| 4    | c  | nop | b   | a   |     |
++------+----+-----+-----+-----+-----+
+| 5    | c  | nop | nop | b   | a   |
++------+----+-----+-----+-----+-----+
+| 6    | c  | nop | nop | nop | b   |
++------+----+-----+-----+-----+-----+
+| 7    | d  | c   | nop | nop | nop |
++------+----+-----+-----+-----+-----+
+| 8    | e  | d   | c   | nop | nop |
++------+----+-----+-----+-----+-----+
+| 9    | e  | nop | d   | c   | nop |
++------+----+-----+-----+-----+-----+
+| 10   | e  | nop | nop | d   | c   |
++------+----+-----+-----+-----+-----+
+| 11   | e  | nop | nop | nop | d   |
++------+----+-----+-----+-----+-----+
+| 12   |    | e   | nop | nop | nop |
++------+----+-----+-----+-----+-----+
+| 13   |    |     | e   | nop | nop |
++------+----+-----+-----+-----+-----+
+| 14   |    |     |     | e   | nop |
++------+----+-----+-----+-----+-----+
+| 15   |    |     |     |     | e   |
++------+----+-----+-----+-----+-----+
+
+4c. a, b, d, c, e
+
+4d. 
+
++------+----+-----+-----+-----+-----+
+| Time | IF | ID  | EX  | MEM | WB  |
++------+----+-----+-----+-----+-----+
+| 1    | a  |     |     |     |     |
++------+----+-----+-----+-----+-----+
+| 2    | b  | a   |     |     |     |
++------+----+-----+-----+-----+-----+
+| 3    | d  | b   | a   |     |     |
++------+----+-----+-----+-----+-----+
+| 4    | c  | d   | b   | a   |     |
++------+----+-----+-----+-----+-----+
+| 5    | c  | nop | d   | b   | a   |
++------+----+-----+-----+-----+-----+
+| 6    | c  | nop | nop | d   | b   |
++------+----+-----+-----+-----+-----+
+| 7    | e  | c   | nop | nop | d   |
++------+----+-----+-----+-----+-----+
+| 8    |    | e   | c   | nop | nop |
++------+----+-----+-----+-----+-----+
+| 9    |    |     | e   | c   | nop |
++------+----+-----+-----+-----+-----+
+| 10   |    |     |     | e   | c   |
++------+----+-----+-----+-----+-----+
+| 11   |    |     |     |     | e   |
++------+----+-----+-----+-----+-----+
+
+5a. 2.5 GHz
+5b. 4 Ghz
+
+6a. The total misprediction penalty will be (5+2) * 3 = 21 clock cycles. The jeq at ram[3] is predicted incorrectly 5 times, whereas the jeq at ram[5] is predicted incorrectly 2 times.
+
+6b. The total misprediction penalty will be (1+3) * 3 = 12 clock cycles. The jeq at ram[3] is mispredicted once (just before the halt directive) and the jeq at ram[5] is mispredicted 3 times.
+
+6c. The total misprediction penalty will be (1+2) * 3 = 9 clock cycles. The jeq at ram[3] mispredicts when $2 stores the value 0, as it expects a branch not taken, but the jump is made. The jeq at ram[5] mispredicts 3 times, incorrectly predicting a branch not taken when $2 stores 22 and 2 and incorrectly predicting a branch taken when $2 stores 94.

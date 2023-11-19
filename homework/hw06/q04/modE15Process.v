@@ -28,7 +28,7 @@ module E15Process(input clk);
    initial
      begin
 
-        `include "program2.v"   // load the program
+        `include "test.v"   // load the program
         
         pc = 4'b0000;           // initialize the program counter
         

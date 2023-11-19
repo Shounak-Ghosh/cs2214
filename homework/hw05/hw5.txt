@@ -1,13 +1,11 @@
 1.  # Store the value 1009 at memory location 456.
-    .fill 1099
-    .fill 456
-    lw $1, 0($0) # store 1099 into Rg1
-    lw $2, 1($0) # store 456 into Rg2
+    lw $1, 4($0) # store 1099 into Rg1
+    lw $2, 5($0) # store 456 into Rg2
     sw $1, 0($2) # store the value of Rg1 (1099) into memory location 456
     halt
+    .fill 1099 # fill commands after halt statement to prevent invalid instruction execution
+    .fill 456
     
-   
-
 2. # Read the values at cells 20 and 30, and store the sum in cell 40.
     lw    $1, 20($0)
     lw    $2, 30($0)
