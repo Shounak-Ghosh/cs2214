@@ -141,44 +141,43 @@ int main(int argc, char *argv[]) {
     bool halt = false;
     while (!halt) { 
         // decode current line, if possible
-        uint16_t line = memory[pc];
+        uint16_t true_pos = pc % MEM_SIZE;
+        uint16_t line = memory[true_pos];
+
+        // extract all possible arguments
         uint16_t opcode = line >> 13;
+        uint16_t imm13 = line & 8191; // bits 0-12
+        uint16_t imm7 = line & 127; // bits 0-6
+        uint16_t regA = (line >> 10) & 7; // bits 10-12
+        uint16_t regB = (line >> 7) & 7; // bits 7-9
+        uint16_t regC = (line >> 4) & 7; // bits 4-6
+        uint16_t func = line & 15; // bits 0-3
 
         switch (opcode) {
             case 0: {
-                uint16_t regA = (line >> 10) & 7; // bits 10-12
-                uint16_t regB = (line >> 7) & 7; // bits 7-9
-                uint16_t regDst = (line >> 4) & 7; // bits 4-6
-                uint16_t imm = line & 15; // bits 0-3
-
-                // if (opcode != 8 && regDst== 0) {
-                //     cerr << "Invalid instruction: destination register cannot be $0" << endl;
-                //     exit(1);
-                // }
-
-                switch (imm) {
+                switch (func) {
                     case 0: { // add
-                        regs[regDst] = regs[regA] + regs[regB];
+                        regs[regC] = regs[regA] + regs[regB];
                         pc++;
                         break;
                     }
                     case 1: { // sub
-                        regs[regDst] = regs[regA] - regs[regB];
+                        regs[regC] = regs[regA] - regs[regB];
                         pc++;
                         break;
                     }
                     case 2: { // or
-                        regs[regDst] = regs[regA] | regs[regB];
+                        regs[regC] = regs[regA] | regs[regB];
                         pc++;                       
                         break;
                     }
                     case 3: { // and
-                        regs[regDst] = regs[regA] & regs[regB];
+                        regs[regC] = regs[regA] & regs[regB];
                         pc++;
                         break;
                     }
                     case 4: { // slt
-                        regs[regDst] = (regs[regA] < regs[regB]) ? 1 : 0;
+                        regs[regC] = (regs[regA] < regs[regB]) ? 1 : 0;
                         pc++;
                         break;
                     }
@@ -187,66 +186,53 @@ int main(int argc, char *argv[]) {
                         break;
                     }
                 }
+                if (regC == 0) regs[0] = 0; // $0 is always 0
                 break;
             }
             case 1: { // addi
-                uint16_t regSrc = (line >> 10) & 0x7; // bits 10-12
-                uint16_t regDst = (line >> 7) & 0x7; // bits 7-9
-                uint16_t imm = line & 127; // bits 0-6
                 // sign extend 7 bit immediate to 16 bits
-                if (imm & 64) imm |= 0xFF80;
-                regs[regDst] = regs[regSrc] + imm;
+                if (imm7 & 64) imm7 |= 0xFF80;
+                regs[regB] = regs[regA] + imm7;
+                if (regB == 0) regs[0] = 0; // $0 is always 0
                 pc++;
                 break;
             }
             case 2: { // j
-                uint16_t imm = line & 8191; // bits 0-12
-                if (pc == imm) halt = true; // tight loop, halt
-                pc = imm;
+                if (pc == imm13) halt = true; // tight loop, halt
+                pc = imm13;
                 break;
             }
             case 3: { // jal
-                uint16_t imm = line & 8191; // bits 0-12
                 regs[7] = pc + 1;
-                pc = imm;
+                pc = imm13;
                 break;
             }
             case 4: { // lw
-                uint16_t regAddr = (line >> 10) & 0x7; // bits 10-12
-                uint16_t regDst = (line >> 7) & 0x7; // bits 7-9
-                uint16_t imm = line & 127; // bits 0-6
                 // sign extend 7 bit immediate to 16 bits
-                if (imm & 64) imm |= 0xFF80;
-                regs[regDst] = memory[regs[regAddr] + imm];
+                if (imm7 & 64) imm7 |= 0xFF80;
+                regs[regB] = memory[(regs[regA] + imm7) % MEM_SIZE];
+                if (regB == 0) regs[0] = 0; // $0 is always 0
                 pc++;
                 break;
             }
             case 5: { // sw
-                uint16_t regAddr = (line >> 10) & 0x7; // bits 10-12
-                uint16_t regSrc = (line >> 7) & 0x7; // bits 7-9
-                uint16_t imm = line & 127; // bits 0-6
                 // sign extend 7 bit immediate to 16 bits
-                if (imm & 64) imm |= 0xFF80;
-                memory[regs[regAddr] + imm] = regs[regSrc];
+                if (imm7 & 64) imm7 |= 0xFF80;
+                memory[(regs[regA] + imm7) % MEM_SIZE] = regs[regB];
                 pc++;
                 break;
             }
             case 6: { // jeq
-                uint16_t regA = (line >> 10) & 0x7; // bits 10-12
-                uint16_t regB = (line >> 7) & 0x7; // bits 7-9
-                uint16_t rel_imm = line & 127; // bits 0-6
                 // sign extend 7 bit immediate to 16 bits
-                if (rel_imm & 64) rel_imm |= 0xFF80;
-                pc = (regs[regA] == regs[regB]) ? pc + 1 + rel_imm : pc + 1;
+                if (imm7 & 64) imm7 |= 0xFF80;
+                pc = (regs[regA] == regs[regB]) ? pc + 1 + imm7 : pc + 1;
                 break;
             }
             case 7: { //slti
-                uint16_t regSrc = (line >> 10) & 0x7; // bits 10-12
-                uint16_t regDst = (line >> 7) & 0x7; // bits 7-9
-                uint16_t imm = line & 127; // bits 0-6
                 // sign extend 7 bit immediate to 16 bits
-                if (imm & 64) imm |= 0xFF80;
-                regs[regDst] = (regs[regSrc] < imm) ? 1 : 0;
+                if (imm7 & 64) imm7 |= 0xFF80;
+                regs[regB] = (regs[regA] < imm7) ? 1 : 0;
+                if (regB == 0) regs[0] = 0; // $0 is always 0
                 pc++;
                 break;
             }
