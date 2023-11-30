@@ -205,14 +205,12 @@ int main(int argc, char *argv[]) {
       int L1blocksize = parts[2];
       print_cache_config(
           "L1", L1size, L1assoc, L1blocksize,
-          L1size / (L1assoc * L1blocksize)); // TODO check if this is right
-
-      // TODO: execute E20 program and simulate one cache here
+          L1size / (L1assoc * L1blocksize)); 
 
       // allocate an array to store cache tags
       int L1rows = L1size / (L1assoc * L1blocksize);
 
-      // an array of vectors (of key,tag pairs) of size L1rows
+      // an array of vectors (of max size L1assoc) of size L1rows
       vector<int> cache_tags[L1rows];
 
       ifstream f(filename);
@@ -310,8 +308,6 @@ int main(int argc, char *argv[]) {
           if (regB == 0)
             regs[0] = 0; // $0 is always 0
 
-          // TODO check if cache hit or miss
-
           // determine access info
           int addr = (regs[regA] + imm7) % MEM_SIZE;
           int blockID = addr / L1blocksize;
@@ -361,8 +357,6 @@ int main(int argc, char *argv[]) {
           if (imm7 & 64)
             imm7 |= 0xFF80;
           memory[(regs[regA] + imm7) % MEM_SIZE] = regs[regB];
-
-          // TODO check if cache hit or miss
 
           // determine access info
           int addr = (regs[regA] + imm7) % MEM_SIZE;
@@ -431,14 +425,289 @@ int main(int argc, char *argv[]) {
       int L2size = parts[3];
       int L2assoc = parts[4];
       int L2blocksize = parts[5];
-      // TODO: execute E20 program and simulate two caches here
+
+      // allocate an array to store cache tags
+      int L1rows = L1size / (L1assoc * L1blocksize);
+      int L2rows = L2size / (L2assoc * L2blocksize);
 
       print_cache_config(
           "L1", L1size, L1assoc, L1blocksize,
-          L1size / (L1assoc * L1blocksize)); // TODO check if this is right
+          L1size / (L1assoc * L1blocksize)); 
       print_cache_config(
           "L2", L2size, L2assoc, L2blocksize,
-          L2size / (L2assoc * L2blocksize)); // TODO check if this is right
+          L2size / (L2assoc * L2blocksize)); 
+
+      // an array of vectors (of max size L1assoc) of size L1rows
+      // the front of each vector is the LRU block
+      vector<int> cache_tags1[L1rows];
+      vector<int> cache_tags2[L2rows];
+
+      ifstream f(filename);
+      if (!f.is_open()) {
+        cerr << "Can't open file " << filename << endl;
+        return 1;
+      }
+
+      // initialize pc, regs, memory
+      uint16_t pc = 0;
+      uint16_t regs[NUM_REGS] = {0};   // all registers are initialized to 0
+      uint16_t memory[MEM_SIZE] = {0}; // all memory is initialized to 0
+
+      // Load f and parse using load_machine_code
+      load_machine_code(f, memory);
+
+      bool halt = false;
+      while (!halt) {
+        // decode current line, if possible
+        uint16_t true_pos = pc % MEM_SIZE;
+        uint16_t line = memory[true_pos];
+
+        // extract all possible arguments
+        uint16_t opcode = line >> 13;
+        uint16_t imm13 = line & 8191;     // bits 0-12
+        uint16_t imm7 = line & 127;       // bits 0-6
+        uint16_t regA = (line >> 10) & 7; // bits 10-12
+        uint16_t regB = (line >> 7) & 7;  // bits 7-9
+        uint16_t regC = (line >> 4) & 7;  // bits 4-6
+        uint16_t func = line & 15;        // bits 0-3
+
+        switch (opcode) {
+        case 0: {
+          switch (func) {
+          case 0: { // add
+            regs[regC] = regs[regA] + regs[regB];
+            pc++;
+            break;
+          }
+          case 1: { // sub
+            regs[regC] = regs[regA] - regs[regB];
+            pc++;
+            break;
+          }
+          case 2: { // or
+            regs[regC] = regs[regA] | regs[regB];
+            pc++;
+            break;
+          }
+          case 3: { // and
+            regs[regC] = regs[regA] & regs[regB];
+            pc++;
+            break;
+          }
+          case 4: { // slt
+            regs[regC] = (regs[regA] < regs[regB]) ? 1 : 0;
+            pc++;
+            break;
+          }
+          case 8: { // jr
+            pc = regs[regA];
+            break;
+          }
+          }
+          if (regC == 0)
+            regs[0] = 0; // $0 is always 0
+          break;
+        }
+        case 1: { // addi
+          // sign extend 7 bit immediate to 16 bits
+          if (imm7 & 64)
+            imm7 |= 0xFF80;
+          regs[regB] = regs[regA] + imm7;
+          if (regB == 0)
+            regs[0] = 0; // $0 is always 0
+          pc++;
+          break;
+        }
+        case 2: { // j
+          if (pc == imm13)
+            halt = true; // tight loop, halt
+          pc = imm13;
+          break;
+        }
+        case 3: { // jal
+          regs[7] = pc + 1;
+          pc = imm13;
+          break;
+        }
+        case 4: { // lw
+          // sign extend 7 bit immediate to 16 bits
+          if (imm7 & 64)
+            imm7 |= 0xFF80;
+          regs[regB] = memory[(regs[regA] + imm7) % MEM_SIZE];
+          if (regB == 0)
+            regs[0] = 0; // $0 is always 0
+
+          // determine L1 access info
+          int addr = (regs[regA] + imm7) % MEM_SIZE;
+          int blockID1 = addr / L1blocksize;
+          int row1 = blockID1 % L1rows;
+          int tag1 = blockID1 / L1rows;
+
+          // check if tag is in cache
+          bool tag1_found = false;
+          for (int i = 0; i < cache_tags1[row1].size(); i++) {
+            if (cache_tags1[row1][i] == tag1) {
+              tag1_found = true;
+              break;
+            }
+          }
+
+          // log hit or miss
+          if (tag1_found) {
+            print_log_entry("L1", "HIT", pc, addr, row1);
+          } else {
+            print_log_entry("L1", "MISS", pc, addr, row1);
+          }
+
+          // update caches
+          if (!tag1_found) {
+
+            // determine L2 access info
+            int blockID2 = addr / L2blocksize;
+            int row2 = blockID2 % L2rows;
+            int tag2 = blockID2 / L2rows;
+
+            // check if tag is in cache
+            bool tag2_found = false;
+            for (int i = 0; i < cache_tags2[row2].size(); i++) {
+              if (cache_tags2[row2][i] == tag2) {
+                tag2_found = true;
+                break;
+              }
+            }
+
+            // log hit or miss
+            if (tag2_found) {
+              print_log_entry("L2", "HIT", pc, addr, row2);
+            } else {
+              print_log_entry("L2", "MISS", pc, addr, row2);
+            }
+
+            // update L2
+            if (!tag2_found) {
+              if (cache_tags2[row2].size() < L2assoc) {
+                cache_tags2[row2].push_back(tag2);
+              } else {
+                cache_tags2[row2].erase(cache_tags2[row2].begin());
+                cache_tags2[row2].push_back(tag2);
+              }
+            } else {
+              // move tag to end of vector
+              for (int i = 0; i < cache_tags2[row2].size(); i++) {
+                if (cache_tags2[row2][i] == tag2) {
+                  cache_tags2[row2].erase(cache_tags2[row2].begin() + i);
+                  cache_tags2[row2].push_back(tag2);
+                  break;
+                }
+              }
+            }
+
+            // update L1
+            if (cache_tags1[row1].size() < L1assoc) {
+              cache_tags1[row1].push_back(tag1);
+            } else {
+              cache_tags1[row1].erase(cache_tags1[row1].begin());
+              cache_tags1[row1].push_back(tag1);
+            }
+          } else { // tag1 found in L1
+            // move tag to end of vector
+            for (int i = 0; i < cache_tags1[row1].size(); i++) {
+              if (cache_tags1[row1][i] == tag1) {
+                cache_tags1[row1].erase(cache_tags1[row1].begin() + i);
+                cache_tags1[row1].push_back(tag1);
+                break;
+              }
+            }
+          }
+
+          pc++;
+          break;
+        }
+        case 5: { // sw
+          // sign extend 7 bit immediate to 16 bits
+          if (imm7 & 64)
+            imm7 |= 0xFF80;
+          memory[(regs[regA] + imm7) % MEM_SIZE] = regs[regB];
+
+
+          // determine L1 access info
+          int addr = (regs[regA] + imm7) % MEM_SIZE;
+          int blockID1 = addr / L1blocksize;
+          int row1 = blockID1 % L1rows;
+          int tag1 = blockID1 / L1rows;
+
+          // check if tag is in cache
+
+          // log the sw
+          print_log_entry("L1", "SW", pc, addr, row1);
+
+          // update L1 cache
+          if (cache_tags1[row1].size() < L1assoc) {
+            cache_tags1[row1].push_back(tag1);
+          } else { // LRU eviction
+            cache_tags1[row1].erase(cache_tags1[row1].begin());
+            cache_tags1[row1].push_back(tag1);
+          }
+
+          // determine L2 access info
+          int blockID2 = addr / L2blocksize;
+          int row2 = blockID2 % L2rows;
+          int tag2 = blockID2 / L2rows;
+
+          // check if tag is in cache
+          bool tag2_found = false;
+          for (int i = 0; i < cache_tags2[row2].size(); i++) {
+            if (cache_tags2[row2][i] == tag2) {
+              tag2_found = true;
+              break;
+            }
+          }
+
+          // log the sw
+          print_log_entry("L2", "SW", pc, addr, row2);
+
+          // update L2 cache
+          if (!tag2_found) {
+            if (cache_tags2[row2].size() < L2assoc) {
+              cache_tags2[row2].push_back(tag2);
+            } else { // LRU eviction
+              cache_tags2[row2].erase(cache_tags2[row2].begin());
+              cache_tags2[row2].push_back(tag2);
+            }
+          }
+          // else {
+          //   // move tag to end of vector
+          //   for (int i = 0; i < cache_tags2[row2].size(); i++) {
+          //     if (cache_tags2[row2][i] == tag2) {
+          //       cache_tags2[row2].erase(cache_tags2[row2].begin() + i);
+          //       cache_tags2[row2].push_back(tag2);
+          //       break;
+          //     }
+          //   }
+          // }
+
+          pc++;
+          break;
+        }
+        case 6: { // jeq
+          // sign extend 7 bit immediate to 16 bits
+          if (imm7 & 64)
+            imm7 |= 0xFF80;
+          pc = (regs[regA] == regs[regB]) ? pc + 1 + imm7 : pc + 1;
+          break;
+        }
+        case 7: { // slti
+          // sign extend 7 bit immediate to 16 bits
+          if (imm7 & 64)
+            imm7 |= 0xFF80;
+          regs[regB] = (regs[regA] < imm7) ? 1 : 0;
+          if (regB == 0)
+            regs[0] = 0; // $0 is always 0
+          pc++;
+          break;
+        }
+        }
+      }
     } else {
       cerr << "Invalid cache config" << endl;
       return 1;
